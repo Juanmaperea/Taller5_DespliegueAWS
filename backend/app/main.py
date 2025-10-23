@@ -13,6 +13,8 @@ origins = [
     "http://localhost:8080",      # para desarrollo local
     "http://127.0.0.1:8080",      # otra forma local
     "http://18.215.163.57",       # acceso directo por IP pública (HTTP)
+    "http://18.215.163.57:8080",    # si frontend sirve en puerto 8080
+    "https://18.215.163.57:8080",    # si frontend sirve en puerto 8080
     "https://18.215.163.57",      # si luego activas HTTPS con Nginx o certbot
 ]
 
