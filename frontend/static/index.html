@@ -1,0 +1,112 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Students CRUD</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://unpkg.com/htmx.org@1.9.2"></script>
+</head>
+<body class="p-4 bg-light">
+  <div class="container">
+    <h1 class="mb-4 text-center text-primary">Students CRUD</h1>
+
+    <!-- Formulario para crear estudiante -->
+    <form id="create-form" class="card p-3 shadow-sm mb-4 bg-white">
+      <h5 class="mb-3">Add new student</h5>
+      <div class="row g-2 align-items-center">
+        <div class="col-md-3">
+          <input name="first_name" class="form-control" placeholder="First name" required>
+        </div>
+        <div class="col-md-3">
+          <input name="last_name" class="form-control" placeholder="Last name" required>
+        </div>
+        <div class="col-md-2">
+          <input name="age" class="form-control" type="number" placeholder="Age">
+        </div>
+        <div class="col-md-3">
+          <input name="favorite_color" class="form-control" placeholder="Favorite color">
+        </div>
+        <div class="col-md-1">
+          <button class="btn btn-primary w-100" type="submit">+</button>
+        </div>
+      </div>
+    </form>
+
+    <!-- Listado de estudiantes -->
+    <div id="students-list" class="row g-3">
+      <!-- Aquí se cargarán las tarjetas -->
+    </div>
+  </div>
+
+  <script>
+    const API_URL = "http://18.215.163.57:8000/students/";
+
+    // Cargar estudiantes al inicio
+    async function loadStudents() {
+      const res = await fetch(API_URL);
+      const students = await res.json();
+      renderStudents(students);
+    }
+
+    // Renderiza la lista en tarjetas bonitas
+    function renderStudents(students) {
+      const container = document.getElementById("students-list");
+      container.innerHTML = "";
+
+      if (students.length === 0) {
+        container.innerHTML = `<p class="text-muted text-center">No students registered yet.</p>`;
+        return;
+      }
+
+      students.forEach(s => {
+        const card = document.createElement("div");
+        card.className = "col-md-4";
+        card.innerHTML = `
+          <div class="card shadow-sm">
+            <div class="card-body">
+              <h5 class="card-title text-primary">${s.first_name} ${s.last_name}</h5>
+              <p class="card-text mb-1"><strong>Age:</strong> ${s.age ?? "N/A"}</p>
+              <p class="card-text"><strong>Favorite color:</strong> ${s.favorite_color ?? "—"}</p>
+              <button class="btn btn-sm btn-danger" onclick="deleteStudent(${s.id})">Delete</button>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // Crear nuevo estudiante (envío JSON)
+    document.getElementById("create-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const data = {
+        first_name: e.target.first_name.value,
+        last_name: e.target.last_name.value,
+        age: e.target.age.value ? parseInt(e.target.age.value) : null,
+        favorite_color: e.target.favorite_color.value
+      };
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      });
+      if (res.ok) {
+        e.target.reset();
+        loadStudents();
+      } else {
+        alert("Error creating student. Check API logs.");
+      }
+    });
+
+    // Eliminar estudiante
+    async function deleteStudent(id) {
+      if (!confirm("Are you sure you want to delete this student?")) return;
+      const res = await fetch(API_URL + id, { method: "DELETE" });
+      if (res.ok) loadStudents();
+      else alert("Error deleting student.");
+    }
+
+    // Cargar estudiantes al iniciar
+    loadStudents();
+  </script>
+</body>
+</html>
